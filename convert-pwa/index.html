@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Reformat · file converter</title>
+  <meta name="description" content="Convert files between formats — images, PDF, Word, text, spreadsheets — entirely in your browser.">
+
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#14161C">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/styles.css">
+
+  <!-- conversion libraries (loaded from CDN; cached by the service worker) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <!-- pdf.js is an ES module; set its worker and expose it globally for converters.js -->
+  <script type="module">
+    import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+    window.pdfjsLib = pdfjsLib;
+  </script>
+</head>
+<body>
+  <main class="wrap">
+    <header class="masthead">
+      <div class="logo" aria-hidden="true">⇄</div>
+      <div>
+        <h1>Reformat</h1>
+        <p class="tagline">Drop a file. Pick a format. Everything runs on your device.</p>
+      </div>
+    </header>
+
+    <!-- drop zone -->
+    <section id="drop" class="drop" aria-label="Choose a file to convert">
+      <input id="file-input" type="file" hidden>
+      <div class="drop__inner">
+        <p class="drop__lead">Drop a file here</p>
+        <p class="drop__sub">images · pdf · word · text · markdown · html · csv · json · excel</p>
+        <button id="pick-btn" type="button" class="btn btn--ghost">Browse files</button>
+      </div>
+    </section>
+
+    <!-- conversion panel -->
+    <section id="panel" class="panel" hidden>
+      <div class="fileline">
+        <div class="fileline__info">
+          <span id="file-name" class="fileline__name">file</span>
+          <span id="file-meta" class="fileline__meta">meta</span>
+        </div>
+        <button id="reset-btn" type="button" class="linkbtn">Change file</button>
+      </div>
+
+      <div class="flow" aria-label="Conversion path">
+        <span id="from-tag" class="tag" data-family="other">?</span>
+        <span class="flow__arrow" aria-hidden="true">→</span>
+        <span id="to-tag" class="tag tag--out" data-family="other">—</span>
+      </div>
+
+      <p class="targets-label">Convert to</p>
+      <div id="targets" class="targets"></div>
+
+      <button id="convert-btn" class="btn btn--primary" disabled>Convert</button>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div id="result" class="result" hidden></div>
+    </section>
+
+    <footer class="foot">
+      <p>Nothing is uploaded. Files never leave your browser. Some routes (PDF↔Word) carry
+         text but not exact layout — those are marked <em>approx</em>.</p>
+    </footer>
+  </main>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/converters.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
